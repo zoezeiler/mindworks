@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anger & Agency Monitor Library</title>
+  <style>
+    :root {
+      --bg: #0e1013;
+      --panel: #151821;
+      --muted: #8e98a8;
+      --text: #e9edf3;
+      --accent: #5cc8ff;
+      --accent2: #ffd166;
+      --danger: #ff6b6b;
+      --ok: #2ecc71;
+      --chip: #1d2230;
+      --chip-border: #2a3144;
+      --input: #1a1f2b;
+      --input-border: #2b3347;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 800px at 100% -10%, #1b2030 0, #0e1013 35%) no-repeat, var(--bg);
+    }
+    header {
+      padding: 20px 16px 8px 16px;
+      border-bottom: 1px solid #20263a;
+      background: rgba(10,12,16,0.6);
+      backdrop-filter: blur(6px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 12px; }
+    h1 { margin: 0 0 6px 0; font-size: 22px; letter-spacing: 0.2px; }
+    .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    @media (min-width: 720px) {
+      .toolbar { grid-template-columns: 1.2fr 0.8fr; }
+    }
+    .input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+    input[type="url"], input[type="text"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--input-border);
+      background: var(--input);
+      color: var(--text);
+      outline: none;
+    }
+    button {
+      padding: 10px 14px;
+      border: 1px solid #2b3347;
+      background: linear-gradient(180deg, #26304a, #1b2337);
+      color: var(--text);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button.primary {
+      border-color: #2c405f;
+      background: linear-gradient(180deg, #2e4a75, #233659);
+      color: #eaf6ff;
+    }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    main { padding: 16px; }
+    .panels {
+      display: grid; gap: 14px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 980px) {
+      .panels { grid-template-columns: 280px 1fr; }
+    }
+    .card {
+      background: linear-gradient(180deg, #121522, #0f1220);
+      border: 1px solid #1d2336;
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 2px 0 #0b0e18 inset, 0 1px 0 rgba(255,255,255,0.04) inset;
+    }
+    .card h3 { margin: 0 0 10px 0; font-size: 16px; letter-spacing: 0.2px; }
+    .small { font-size: 12px; color: var(--muted); }
+
+    .filters .row { display: grid; gap: 8px; margin-bottom: 10px; }
+    .filters .row.two { grid-template-columns: 1fr 1fr; }
+    .filters .row.three { grid-template-columns: 1fr 1fr 1fr; }
+    .chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 10px; margin: 3px 4px 0 0;
+      border-radius: 999px; background: var(--chip); border: 1px solid var(--chip-border);
+      font-size: 12px; color: var(--muted);
+    }
+
+    .results-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 10px; margin-bottom: 8px;
+    }
+    .count { color: var(--muted); font-size: 13px; }
+    .grid {
+      display: grid; gap: 10px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 680px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (min-width: 1024px) {
+      .grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .item {
+      background: linear-gradient(180deg, #14192a, #11152a);
+      border: 1px solid #1d2540; border-radius: 14px; padding: 12px;
+      display: flex; flex-direction: column; gap: 8px;
+      min-height: 180px;
+    }
+    .item .title {
+      font-weight: 600; font-size: 15px; line-height: 1.25;
+    }
+    .meta { display: flex; flex-wrap: wrap; gap: 6px; }
+    .meta .tag { font-size: 11px; color: var(--muted); background: #151a2b; padding: 4px 8px; border-radius: 999px; border: 1px solid #232a45; }
+    .desc { color: #cfd6e4; font-size: 13px; line-height: 1.35; }
+    .actions { margin-top: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+    .actions a, .actions button.link {
+      text-decoration: none;
+      padding: 8px 10px; border-radius: 10px;
+      border: 1px solid #2b3347; color: #eaf2ff;
+      background: #1b2337;
+      font-size: 13px;
+    }
+    .actions a.primary { background: #2a4270; border-color: #34538f; }
+    .actions a.warn { background: #3a2431; border-color: #5a2d43; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .footer { padding: 18px; text-align: center; color: var(--muted); font-size: 12px; }
+    .loading, .error { padding: 10px 12px; border-radius: 10px; }
+    .loading { background: #162438; color: #cde6ff; border: 1px solid #263b5a; }
+    .error { background: #341a1e; color: #ffd9de; border: 1px solid #5a2d37; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Anger & Agency Monitor Library</h1>
+      <div class="subtitle">Organization-wide, read-only library. All documents and datasets open from Google Drive.</div>
+      <div class="toolbar">
+        <div class="input-row">
+          <input id="catalogUrl" type="url" placeholder="Paste the Google Drive link to catalog_metadata.csv" />
+          <button id="loadBtn" class="primary">Load catalog</button>
+        </div>
+        <div class="input-row">
+          <input id="q" type="text" placeholder="Search title, description, topics, country…" />
+          <button id="clearBtn">Clear</button>
+        </div>
+      </div>
+      <div id="status" class="small" style="margin-top:8px;"></div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="panels">
+      <aside class="card filters">
+        <h3>Filters</h3>
+        <div class="row">
+          <label class="small">Doc type</label>
+          <select id="docType">
+            <option value="">Any</option>
+          </select>
+        </div>
+        <div class="row">
+          <label class="small">Country</label>
+          <select id="country">
+            <option value="">Any</option>
+          </select>
+        </div>
+        <div class="row">
+          <label class="small">Region</label>
+          <select id="region">
+            <option value="">Any</option>
+          </select>
+        </div>
+        <div class="row">
+          <label class="small">Topics (contains)</label>
+          <input id="topics" type="text" placeholder="e.g., anger; scarcity_mindset" />
+        </div>
+        <div class="row two">
+          <button id="apply" class="primary">Apply</button>
+          <button id="reset">Reset</button>
+        </div>
+        <div class="row">
+          <div id="legend" class="small muted">
+            Tip: Set Drive sharing to “Anyone in your-organization with the link can view” or “Anyone with the link can view”.
+          </div>
+        </div>
+      </aside>
+
+      <section class="card">
+        <div class="results-head">
+          <div class="count" id="count">0 items</div>
+          <div class="small muted" id="activeCatalog"></div>
+        </div>
+        <div id="alerts"></div>
+        <div id="grid" class="grid"></div>
+      </section>
+    </div>
+    <div class="footer">
+      Runs fully in your browser. Data stays on Google Drive. No login required beyond Drive file access.
+    </div>
+  </main>
+
+  <script>
+    // =======================
+    // Configuration
+    // =======================
+    // Optional: hardcode your catalog URL here for 1-click loading.
+    // Example (replace with the Drive link that hosts catalog_metadata.csv):
+    // const defaultCatalogUrl = 'https://drive.google.com/file/d/FILE_ID/view?usp=sharing';
+    // For now, leave blank; users can paste.
+    const defaultCatalogUrl = '';
+
+    // =======================
+    // Utilities
+    // =======================
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
+
+    function setStatus(msg, type='info') {
+      const el = $('#status');
+      if (!msg) { el.textContent = ''; return; }
+      const prefix = type === 'error' ? 'Error: ' : type === 'ok' ? 'OK: ' : '';
+      el.textContent = prefix + msg;
+      el.style.color = (type === 'error') ? '#ffb3be' : (type === 'ok') ? '#b8ffd3' : '#8e98a8';
+    }
+
+    function showAlert(msg, type='info') {
+      const host = $('#alerts');
+      const div = document.createElement('div');
+      div.className = type === 'error' ? 'error' : 'loading';
+      div.textContent = msg;
+      host.appendChild(div);
+      return () => host.removeChild(div);
+    }
+
+    function uniq(values) {
+      return Array.from(new Set(values.filter(Boolean))).sort((a,b) => a.localeCompare(b));
+    }
+
+    function parseCSV(text) {
+      // Robust CSV parsing with quoted fields. No external libs.
+      const rows = [];
+      let i = 0, cur = '', inQuotes = false, row = [];
+      while (i < text.length) {
+        const char = text[i], next = text[i+1];
+        if (inQuotes) {
+          if (char === '"' && next === '"') { cur += '"'; i += 2; continue; }
+          if (char === '"') { inQuotes = false; i++; continue; }
+          cur += char; i++; continue;
+        } else {
+          if (char === '"') { inQuotes = true; i++; continue; }
+          if (char === ',') { row.push(cur); cur=''; i++; continue; }
+          if (char === '\n') { row.push(cur); rows.push(row); row=[]; cur=''; i++; continue; }
+          if (char === '\r') { i++; continue; }
+          cur += char; i++; continue;
+        }
+      }
+      // last cell
+      row.push(cur); rows.push(row);
+      // header mapping
+      const header = rows.shift().map(h => h.trim());
+      const records = rows
+        .filter(r => r.some(c => (c||'').trim() !== ''))
+        .map(r => {
+          const obj = {};
+          header.forEach((h, idx) => { obj[h] = (r[idx] || '').trim(); });
+          return obj;
+        });
+      return { header, records };
+    }
+
+    function extractDriveId(url) {
+      // Supports /file/d/ID and /spreadsheets/d/ID and bare /d/ID
+      try {
+        const u = new URL(url);
+        const parts = u.pathname.split('/');
+        const dIndex = parts.indexOf('d');
+        if (dIndex >= 0 && parts[dIndex+1]) {
+          return { id: parts[dIndex+1], kind: (parts.includes('spreadsheets') ? 'sheet' : 'file') };
+        }
+        // Fallback: try regex
+        const m = url.match(/\/d\/([^\/?#]+)/);
+        if (m) return { id: m[1], kind: url.includes('spreadsheets') ? 'sheet' : 'file' };
+      } catch(e) {}
+      return null;
+    }
+
+    function buildDriveLinks(sourceUrl, docType, fileName) {
+      // Returns { openUrl, downloadUrl, csvUrl, note }
+      const out = { openUrl: sourceUrl, downloadUrl: '', csvUrl: '', note: '' };
+      const info = extractDriveId(sourceUrl);
+      if (!info) { return out; }
+
+      if (info.kind === 'file') {
+        // Standard Drive file (pdf, docx, etc.)
+        out.openUrl = `https://drive.google.com/file/d/${info.id}/view`;
+        // Attempt export for common types:
+        // PDF direct download
+        if ((fileName||'').toLowerCase().endsWith('.pdf')) {
+          out.downloadUrl = `https://drive.google.com/uc?export=download&id=${info.id}`;
+        } else {
+          // generic download
+          out.downloadUrl = `https://drive.google.com/uc?export=download&id=${info.id}`;
+        }
+      } else if (info.kind === 'sheet') {
+        // Google Sheet dataset (your CSVs are Sheets)
+        out.openUrl = `https://docs.google.com/spreadsheets/d/${info.id}/view`;
+        // CSV export (first sheet)
+        out.csvUrl = `https://docs.google.com/spreadsheets/d/${info.id}/export?format=csv`;
+        out.downloadUrl = out.csvUrl;
+      }
+      return out;
+    }
+
+    function tokenize(s) {
+      return (s || '').toLowerCase();
+    }
+
+    function asArray(semi) {
+      if (!semi) return [];
+      return semi.split(';').map(x => x.trim()).filter(Boolean);
+    }
+
+    // =======================
+    // App state
+    // =======================
+    let catalog = [];
+    let filtered = [];
+
+    // =======================
+    // Rendering
+    // =======================
+    function renderFilters() {
+      const types = uniq(catalog.map(r => r.doc_type).filter(Boolean));
+      const countries = uniq(catalog.flatMap(r => asArray(r.country)));
+      const regions = uniq(catalog.flatMap(r => asArray(r.region)));
+
+      const docType = $('#docType');
+      const country = $('#country');
+      const region = $('#region');
+
+      // Populate selects (keep "Any")
+      function populate(select, values) {
+        const current = select.value;
+        select.innerHTML = '<option value="">Any</option>' + values.map(v => `<option value="${v}">${v}</option>`).join('');
+        // try to preserve current selection if exists
+        if ([...select.options].some(o => o.value === current)) select.value = current;
+      }
+      populate(docType, types);
+      populate(country, countries);
+      populate(region, regions);
+    }
+
+    function renderList() {
+      const grid = $('#grid');
+      grid.innerHTML = '';
+      $('#count').textContent = `${filtered.length} items`;
+
+      if (!filtered.length) {
+        const div = document.createElement('div');
+        div.className = 'small muted';
+        div.textContent = 'No items match your filters.';
+        grid.appendChild(div);
+        return;
+      }
+
+      for (const r of filtered) {
+        const links = buildDriveLinks(r.source_url, r.doc_type, r.file_name);
+        const item = document.createElement('div');
+        item.className = 'item';
+
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.textContent = r.cite_as || r.file_name || '(untitled)';
+        item.appendChild(title);
+
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const tagList = [
+          r.doc_type,
+          (r.date ? `date:${r.date}` : ''),
+          (r.time_coverage ? `time:${r.time_coverage}` : ''),
+          (r.version ? `ver:${r.version}` : ''),
+          (r.data_version ? `data:${r.data_version}` : ''),
+          (r.country ? `country:${r.country}` : ''),
+          (r.region ? `region:${r.region}` : '')
+        ].filter(Boolean);
+        for (const t of tagList) {
+          const tEl = document.createElement('span'); tEl.className = 'tag'; tEl.textContent = t;
+          meta.appendChild(tEl);
+        }
+        item.appendChild(meta);
+
+        const desc = document.createElement('div');
+        desc.className = 'desc';
+        desc.textContent = r.description || r.summary_1p || '';
+        item.appendChild(desc);
+
+        const chips = document.createElement('div');
+        const topics = (r.topics || '').split(';').map(s => s.trim()).filter(Boolean);
+        if (topics.length) {
+          for (const t of topics.slice(0, 6)) {
+            const chip = document.createElement('span');
+            chip.className = 'chip';
+            chip.textContent = t;
+            chips.appendChild(chip);
+          }
+          item.appendChild(chips);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+
+        const openA = document.createElement('a');
+        openA.href = links.openUrl || r.source_url;
+        openA.target = '_blank';
+        openA.rel = 'noopener';
+        openA.className = 'primary';
+        openA.textContent = 'Open';
+        actions.appendChild(openA);
+
+        if (links.csvUrl && (r.file_name||'').toLowerCase().endsWith('.csv')) {
+          const csvA = document.createElement('a');
+          csvA.href = links.csvUrl;
+          csvA.target = '_blank';
+          csvA.rel = 'noopener';
+          csvA.textContent = 'Download CSV';
+          actions.appendChild(csvA);
+        } else if (links.downloadUrl) {
+          const dlA = document.createElement('a');
+          dlA.href = links.downloadUrl;
+          dlA.target = '_blank';
+          dlA.rel = 'noopener';
+          dlA.textContent = 'Download';
+          actions.appendChild(dlA);
+        }
+
+        // Show the raw Drive link for transparency
+        const rawA = document.createElement('a');
+        rawA.href = r.source_url;
+        rawA.target = '_blank';
+        rawA.rel = 'noopener';
+        rawA.className = 'warn';
+        rawA.textContent = 'Raw link';
+        actions.appendChild(rawA);
+
+        item.appendChild(actions);
+
+        const foot = document.createElement('div');
+        foot.className = 'muted';
+        const audiences = (r.audience || '').split(';').filter(Boolean).join(', ');
+        const useCases = (r.use_cases || '').split(';').filter(Boolean).join(', ');
+        const extras = [audiences ? `audience: ${audiences}` : '', useCases ? `use: ${useCases}` : ''].filter(Boolean).join(' · ');
+        foot.textContent = extras;
+        item.appendChild(foot);
+
+        grid.appendChild(item);
+      }
+    }
+
+    function applyFilters() {
+      const query = tokenize($('#q').value);
+      const docType = $('#docType').value;
+      const country = $('#country').value;
+      const region = $('#region').value;
+      const topics = tokenize($('#topics').value);
+
+      filtered = catalog.filter(r => {
+        // docType, country, region exact filters (OR empty)
+        if (docType && r.doc_type !== docType) return false;
+        if (country && !(r.country || '').split(';').map(s=>s.trim()).includes(country)) return false;
+        if (region && !(r.region || '').split(';').map(s=>s.trim()).includes(region)) return false;
+
+        // topics substring
+        if (topics) {
+          const allTopics = (r.topics || '').toLowerCase();
+          if (!allTopics.includes(topics)) return false;
+        }
+
+        // text query across fields
+        if (query) {
+          const hay = [
+            r.file_name, r.doc_type, r.description, r.summary_1p, r.key_stats,
+            r.topics, r.related_to, r.cite_as, r.country, r.region, r.audience, r.use_cases
+          ].join(' | ').toLowerCase();
+          if (!hay.includes(query)) return false;
+        }
+        return true;
+      });
+
+      renderList();
+    }
+
+    async function fetchText(url) {
+      const res = await fetch(url, { mode: 'cors' });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      return await res.text();
+    }
+
+    function normalizeCatalogUrl(url) {
+      // If user pasted a Google Drive "file" link to the CSV, convert to a direct download endpoint
+      // Supports:
+      //  - https://drive.google.com/file/d/ID/view
+      //  - https://drive.google.com/file/d/ID
+      //  - https://docs.google.com/spreadsheets/d/ID (if someone hosts the catalog as Google Sheet; we will export as CSV)
+      try {
+        const u = new URL(url);
+        if (u.hostname.includes('docs.google.com') && u.pathname.includes('/spreadsheets/')) {
+          const id = extractDriveId(url)?.id;
+          if (id) return `https://docs.google.com/spreadsheets/d/${id}/export?format=csv`;
+        }
+        if (u.hostname.includes('drive.google.com') && u.pathname.includes('/file/')) {
+          const info = extractDriveId(url);
+          if (info?.id) return `https://drive.google.com/uc?export=download&id=${info.id}`;
+        }
+        // If it's already a direct CSV endpoint or a raw CSV hosted elsewhere, keep as is
+        return url;
+      } catch(e) {
+        return url;
+      }
+    }
+
+    async function loadCatalog(url) {
+      const close = showAlert('Loading catalog…');
+      try {
+        setStatus('Fetching catalog…');
+        const finalUrl = normalizeCatalogUrl(url);
+        $('#activeCatalog').textContent = finalUrl;
+        const text = await fetchText(finalUrl);
+        setStatus('Parsing catalog…');
+        const { header, records } = parseCSV(text);
+
+        // Expecting the following columns (based on your catalog):
+        // file_name, doc_type, audience, description, summary_1p, use_cases, date, time_coverage, version, data_version, country, region, sample_size, key_stats, topics, related_to, quality_flags, cite_as, source_type, source_url
+        catalog = records.map(r => r);
+        renderFilters();
+        filtered = catalog.slice();
+        renderList();
+        setStatus(`Loaded ${records.length} items.`, 'ok');
+      } catch (err) {
+        console.error(err);
+        setStatus(`Failed to load: ${err.message}`, 'error');
+        showAlert(`Could not load the catalog. Ensure sharing is set to "Anyone with the link can view" or org-wide.`, 'error');
+      } finally {
+        close();
+      }
+    }
+
+    // =======================
+    // Event wiring
+    // =======================
+    $('#apply').addEventListener('click', applyFilters);
+    $('#reset').addEventListener('click', () => {
+      $('#q').value = '';
+      $('#docType').value = '';
+      $('#country').value = '';
+      $('#region').value = '';
+      $('#topics').value = '';
+      filtered = catalog.slice();
+      renderList();
+    });
+    $('#clearBtn').addEventListener('click', () => { $('#q').value = ''; applyFilters(); });
+    $('#q').addEventListener('input', () => { applyFilters(); });
+
+    $('#loadBtn').addEventListener('click', () => {
+      const url = $('#catalogUrl').value.trim() || defaultCatalogUrl;
+      if (!url) { setStatus('Please paste the Google Drive link to catalog_metadata.csv'); return; }
+      loadCatalog(url);
+    });
+
+    // Auto-load if defaultCatalogUrl is set
+    window.addEventListener('DOMContentLoaded', () => {
+      if (defaultCatalogUrl) {
+        $('#catalogUrl').value = defaultCatalogUrl;
+        loadCatalog(defaultCatalogUrl);
+      }
+    });
+  </script>
+</body>
+</html>
