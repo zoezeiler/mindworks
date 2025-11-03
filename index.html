@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Anger & Agency Monitor Library</title>
+  <title>Mindworks Library</title>
   <style>
     :root {
       --bg: #0e1013;
@@ -150,11 +150,11 @@
 <body>
   <header>
     <div class="container">
-      <h1>Anger & Agency Monitor Library</h1>
+      <h1>Mindworks Library</h1>
       <div class="subtitle">Organization-wide, read-only library. All documents and datasets open from Google Drive.</div>
       <div class="toolbar">
         <div class="input-row">
-          <input id="catalogUrl" type="url" placeholder="Paste the Google Drive link to catalog_metadata.csv" />
+          <input id="catalogUrl" type="url" placeholder="https://docs.google.com/spreadsheets/d/1S-5Swnxtci-nQ7y_cLjHF0khLZzQmOMhlO3-iwbYbJU" />
           <button id="loadBtn" class="primary">Load catalog</button>
         </div>
         <div class="input-row">
@@ -221,11 +221,9 @@
     // =======================
     // Configuration
     // =======================
-    // Optional: hardcode your catalog URL here for 1-click loading.
-    // Example (replace with the Drive link that hosts catalog_metadata.csv):
     // const defaultCatalogUrl = 'https://drive.google.com/file/d/FILE_ID/view?usp=sharing';
     // For now, leave blank; users can paste.
-    const defaultCatalogUrl = '';
+    const defaultCatalogUrl = 'https://docs.google.com/spreadsheets/d/1S-5Swnxtci-nQ7y_cLjHF0khLZzQmOMhlO3-iwbYbJU/edit?usp=drive_link';
 
     // =======================
     // Utilities
